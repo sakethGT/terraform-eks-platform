@@ -1,0 +1,11 @@
+.terraform
+*.backup
+kubeconfig*
+config-map-aws-*
+
+# IntelliJ
+*.ipr
+*.iml
+*.iws
+.idea/
+

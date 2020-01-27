@@ -1,0 +1,19 @@
+provider: aws
+
+aws:
+  region: us-east-2
+
+rbac:
+  create: true
+  serviceAccountName: external-dns
+
+zoneIdFilters:
+  - Z1VPVBQHG6AUPL
+  - Z385TIGP0117GY
+
+podAnnotations:
+  iam.amazonaws.com/role: eks-core-external-dns
+
+txtOwnerId: external-dns-npe2
+publishInternalServices: true
+logLevel: debug

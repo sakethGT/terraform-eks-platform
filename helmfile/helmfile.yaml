@@ -1,0 +1,47 @@
+repositories:
+  - name: stable
+    url: https://kubernetes-charts.storage.googleapis.com
+
+  {{ if env "RMS_HELM_CHART_REPO_URL" }}
+  # RMS chart repo - currently not used but we may want to bring charts inhouse
+  - name: "rms-chart-repo"
+    url: '{{ env "RMS_HELM_CHART_REPO_URL" }}'
+  {{ end }}
+
+releases:
+  - name: eks-core-cluster-autoscaler
+    namespace: kube-system
+    chart: stable/cluster-autoscaler
+    values:
+    - "../../rms-skyfall-terraform/environments/mgmt/HelmValuesNPE/cluster-autoscaler.yaml"  
+
+  - name: eks-core-kube2iam
+    namespace: kube-system
+    chart: stable/kube2iam
+    values:
+    - "../../rms-skyfall-terraform/environments/mgmt/HelmValuesNPE/kube2iam.yaml"  
+  
+  - name: eks-core-nginx-ingress-ext
+    namespace: kube-system
+    chart: stable/nginx-ingress
+    values:
+    - "../../rms-skyfall-terraform/environments/mgmt/HelmValuesNPE/nginx-ingress-ext.yaml"  
+
+  - name: eks-core-nginx-ingress-int
+    namespace: kube-system
+    chart: stable/nginx-ingress
+    values:
+    - "../../rms-skyfall-terraform/environments/mgmt/HelmValuesNPE/nginx-ingress-int.yaml"  
+
+  - name: eks-core-external-dns
+    namespace: kube-system
+    chart: stable/external-dns
+    values:
+    - "../../rms-skyfall-terraform/environments/mgmt/HelmValuesNPE/external-dns.yaml"  
+
+  # SDP Support tooling 
+  - name: weave-scope
+    namespace: {{ env "SDP_TOOLING_NAMESPACE" | default "default" }}
+    labels:                                  
+      component: sdp_support_tooling
+    chart: stable/weave-scope

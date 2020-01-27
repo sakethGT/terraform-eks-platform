@@ -1,0 +1,19 @@
+provider: aws
+
+aws:
+  region: eu-west-1
+
+rbac:
+  create: true
+  serviceAccountName: external-dns
+
+# zoneid for mgmt.euw1.rms-internal.com.
+zoneIdFilters:
+  - Z32PANERXLOSGN
+
+podAnnotations:
+  iam.amazonaws.com/role: k8s-external-dns-mgmt-euw1-pe
+
+txtOwnerId: external-dns-mgmt-euw1-pe
+publishInternalServices: true
+logLevel: debug

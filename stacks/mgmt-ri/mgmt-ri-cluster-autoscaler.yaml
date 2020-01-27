@@ -1,0 +1,14 @@
+awsRegion: us-east-1
+cloudProvider: aws
+
+autoDiscovery:
+  enabled: true
+  clusterName: mgmt-ri
+
+sslCertPath: /etc/ssl/certs/ca-bundle.crt
+
+podAnnotations:
+  iam.amazonaws.com/role: k8s-clusterautoscaler-mgmt-ri
+
+rbac:
+  create: true

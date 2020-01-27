@@ -1,0 +1,17 @@
+controller:
+  replicaCount: 3
+  ingressClass: mgmt-npe-nginx
+  stats:
+    enabled: true
+  publishService:
+    enabled: true
+  service:
+    targetPorts:
+      http: http
+      https: http
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
+      service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "3600"
+      service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-east-1:062328325359:certificate/a0df3495-e5f1-480e-8491-306fa8866c1b
+      service.beta.kubernetes.io/aws-load-balancer-ssl-ports: https
+      service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"

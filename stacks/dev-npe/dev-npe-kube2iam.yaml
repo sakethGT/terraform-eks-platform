@@ -1,0 +1,16 @@
+image:
+  tag: 0.10.4
+
+host:
+  iptables: true
+  interface: eni+
+
+rbac:
+  create: true
+
+verbose: true
+
+extraArgs:
+  auto-discover-default-role: true
+  auto-discover-base-arn: true
+

@@ -1,0 +1,19 @@
+provider: aws
+
+aws:
+  region: us-east-1
+
+rbac:
+  create: true
+  serviceAccountName: external-dns
+
+# zone id for dev.npe.rms-internal.com
+zoneIdFilters:
+  - ZGWNMKCRDE2FW
+
+podAnnotations:
+  iam.amazonaws.com/role: k8s-external-dns-dev-npe
+
+txtOwnerId: external-dns-dev-npe
+publishInternalServices: true
+logLevel: debug
