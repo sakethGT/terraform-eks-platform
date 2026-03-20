@@ -7,9 +7,9 @@ rbac:
   create: true
   serviceAccountName: external-dns
 
-# zone id for dev.npe.rms-internal.com
+# zone id for dev.npe.example-internal.com
 zoneIdFilters:
-  - ZGWNMKCRDE2FW
+  - ZEXAMPLEZONEID1
 
 podAnnotations:
   iam.amazonaws.com/role: k8s-external-dns-dev-npe

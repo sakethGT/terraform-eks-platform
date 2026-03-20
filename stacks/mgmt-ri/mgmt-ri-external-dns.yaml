@@ -8,7 +8,7 @@ rbac:
   serviceAccountName: external-dns
 
 zoneIdFilters:
-  - Z1DCGKL4WPIMIH
+  - ZEXAMPLEZONEID3
 
 podAnnotations:
   iam.amazonaws.com/role: k8s-external-dns-mgmt-ri

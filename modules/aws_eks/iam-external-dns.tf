@@ -1,3 +1,4 @@
+# IAM role for external-dns using IRSA pattern
 data "aws_iam_policy_document" "external-dns" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -21,7 +22,7 @@ data "aws_iam_policy_document" "external-dns" {
 resource "aws_iam_role" "external-dns" {
   name               = "k8s-external-dns-${var.stack}-${var.env}"
   path               = "/"
-  assume_role_policy = "${data.aws_iam_policy_document.external-dns.json}"
+  assume_role_policy = data.aws_iam_policy_document.external-dns.json
 }
 
 data "aws_iam_policy_document" "external-dns-policy" {
@@ -52,6 +53,6 @@ data "aws_iam_policy_document" "external-dns-policy" {
 
 resource "aws_iam_role_policy" "external-dns" {
   name   = "external-dns-${var.stack}-${var.env}"
-  role   = "${aws_iam_role.external-dns.id}"
-  policy = "${data.aws_iam_policy_document.external-dns-policy.json}"
+  role   = aws_iam_role.external-dns.id
+  policy = data.aws_iam_policy_document.external-dns-policy.json
 }

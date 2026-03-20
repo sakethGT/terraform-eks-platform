@@ -1,3 +1,4 @@
+# IAM role for cluster-autoscaler using IRSA pattern
 data "aws_iam_policy_document" "cluster-autoscaler" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -21,7 +22,7 @@ data "aws_iam_policy_document" "cluster-autoscaler" {
 resource "aws_iam_role" "cluster-autoscaler" {
   name               = "k8s-clusterautoscaler-${var.stack}-${var.env}"
   path               = "/"
-  assume_role_policy = "${data.aws_iam_policy_document.cluster-autoscaler.json}"
+  assume_role_policy = data.aws_iam_policy_document.cluster-autoscaler.json
 }
 
 data "aws_iam_policy_document" "cluster-autoscaler-policy" {
@@ -41,6 +42,6 @@ data "aws_iam_policy_document" "cluster-autoscaler-policy" {
 
 resource "aws_iam_role_policy" "cluster-autoscaler" {
   name   = "clusterautoscaler-${var.stack}-${var.env}"
-  role   = "${aws_iam_role.cluster-autoscaler.id}"
-  policy = "${data.aws_iam_policy_document.cluster-autoscaler-policy.json}"
+  role   = aws_iam_role.cluster-autoscaler.id
+  policy = data.aws_iam_policy_document.cluster-autoscaler-policy.json
 }

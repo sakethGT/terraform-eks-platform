@@ -7,9 +7,9 @@ rbac:
   create: true
   serviceAccountName: external-dns
 
-# zone id for mgmt.npe.rms-internal.com
+# zone id for mgmt.npe.example-internal.com
 zoneIdFilters:
-  - Z385TIGP0117GY
+  - ZEXAMPLEZONEID2
 
 podAnnotations:
   iam.amazonaws.com/role: k8s-external-dns-mgmt-npe

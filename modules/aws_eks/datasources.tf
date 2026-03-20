@@ -7,13 +7,13 @@ data "aws_region" "current" {}
 data "aws_availability_zones" "azs" {}
 
 data "aws_vpc" "vpc" {
-  id = "${var.vpc_id}"
+  id = var.vpc_id
 }
 
 data "aws_subnet_ids" "private" {
-  vpc_id = "${data.aws_vpc.vpc.id}"
+  vpc_id = data.aws_vpc.vpc.id
 
-  filter = {
+  filter {
     name   = "tag:type"
     values = ["private"]
   }

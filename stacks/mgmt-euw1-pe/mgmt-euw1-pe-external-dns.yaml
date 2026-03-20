@@ -7,9 +7,9 @@ rbac:
   create: true
   serviceAccountName: external-dns
 
-# zoneid for mgmt.euw1.rms-internal.com.
+# zoneid for mgmt.euw1.example-internal.com.
 zoneIdFilters:
-  - Z32PANERXLOSGN
+  - ZEXAMPLEZONEID4
 
 podAnnotations:
   iam.amazonaws.com/role: k8s-external-dns-mgmt-euw1-pe

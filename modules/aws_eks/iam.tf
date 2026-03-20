@@ -24,18 +24,19 @@ data "aws_iam_policy_document" "eks" {
 resource "aws_iam_role" "eks" {
   name               = "EKSWorker-${var.stack}-${var.env}"
   path               = "/"
-  assume_role_policy = "${data.aws_iam_policy_document.eks.json}"
+  assume_role_policy = data.aws_iam_policy_document.eks.json
 }
 
 resource "aws_iam_role_policy_attachment" "eks-AmazonEKSClusterPolicy" {
-  count      = "${length(local.eks_policies)}"
+  count      = length(local.eks_policies)
   policy_arn = "arn:aws:iam::aws:policy/${element(local.eks_policies, count.index)}"
-  role       = "${aws_iam_role.eks.name}"
+  role       = aws_iam_role.eks.name
 }
 
+# IRSA-compatible STS policy for pod-level IAM access
 data "aws_iam_policy_document" "eks-sts" {
   statement {
-    sid    = "kube2iamsts"
+    sid    = "irsasts"
     effect = "Allow"
 
     actions = [
@@ -47,7 +48,7 @@ data "aws_iam_policy_document" "eks-sts" {
 }
 
 resource "aws_iam_role_policy" "eks-sts" {
-  name   = "kube2iam-sts-${var.stack}-${var.env}"
-  role   = "${aws_iam_role.eks.id}"
-  policy = "${data.aws_iam_policy_document.eks-sts.json}"
+  name   = "irsa-sts-${var.stack}-${var.env}"
+  role   = aws_iam_role.eks.id
+  policy = data.aws_iam_policy_document.eks-sts.json
 }

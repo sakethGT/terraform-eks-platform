@@ -1,3 +1,4 @@
+# IAM role for workflow services using IRSA pattern
 data "aws_iam_policy_document" "workflow" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -21,7 +22,7 @@ data "aws_iam_policy_document" "workflow" {
 resource "aws_iam_role" "workflow" {
   name               = "k8s-workflow-${var.stack}-${var.env}"
   path               = "/"
-  assume_role_policy = "${data.aws_iam_policy_document.workflow.json}"
+  assume_role_policy = data.aws_iam_policy_document.workflow.json
 }
 
 data "aws_iam_policy_document" "workflow-policy" {
@@ -39,6 +40,6 @@ data "aws_iam_policy_document" "workflow-policy" {
 
 resource "aws_iam_role_policy" "workflow" {
   name   = "workflow-${var.stack}-${var.env}"
-  role   = "${aws_iam_role.workflow.id}"
-  policy = "${data.aws_iam_policy_document.workflow-policy.json}"
+  role   = aws_iam_role.workflow.id
+  policy = data.aws_iam_policy_document.workflow-policy.json
 }
