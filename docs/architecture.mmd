@@ -1,0 +1,83 @@
+flowchart TD
+
+    subgraph ENV["Environment Stacks"]
+        DEV["dev-npe\nus-east-1"]
+        MGMT_NPE["mgmt-npe\nus-east-1"]
+        MGMT_RI["mgmt-ri\nus-east-1"]
+        MGMT_PE["mgmt-euw1-pe\neu-west-1"]
+    end
+
+    DEV --> EKS_MOD
+    MGMT_NPE --> EKS_MOD
+    MGMT_RI --> EKS_MOD
+    MGMT_PE --> EKS_MOD
+
+    subgraph EKS_MOD["Shared EKS Module · modules/aws_eks"]
+        direction TB
+        subgraph CP["EKS Cluster"]
+            CTRL["Control Plane\nKubernetes API"]
+            NG["Managed Node Groups\nm5.xlarge · m5.4xlarge"]
+        end
+
+        subgraph IRSA["IAM Roles — IRSA"]
+            WR["Worker Node Role"]
+            CAR["Cluster Autoscaler\nRole"]
+            EDR["ExternalDNS\nRole"]
+            WFR["Workflow\nRole"]
+        end
+
+        CTRL --> NG
+        NG --> WR
+        WFR --> WR
+    end
+
+    subgraph ADDONS["Kubernetes Add-ons"]
+        NI["NGINX Ingress\nController"]
+        EDS["ExternalDNS"]
+        CAS["Cluster\nAutoscaler"]
+        MS["Metrics\nServer"]
+    end
+
+    NG --> ADDONS
+    CAS --> CAR
+    EDS --> EDR
+
+    subgraph AWS["AWS Services"]
+        R53["Route 53"]
+        ACM["ACM\nCertificates"]
+        S3["S3 Backend\nTerraform State"]
+        VPC["VPC\nPrivate Subnets"]
+    end
+
+    NI --> ACM
+    EDS --> R53
+    EKS_MOD --> VPC
+    ENV --> S3
+
+    style ENV fill:#1a1a2e,stroke:#58a6ff,stroke-width:2px,color:#c9d1d9
+    style DEV fill:#1f6feb,stroke:#58a6ff,color:#fff
+    style MGMT_NPE fill:#1f6feb,stroke:#58a6ff,color:#fff
+    style MGMT_RI fill:#1f6feb,stroke:#58a6ff,color:#fff
+    style MGMT_PE fill:#1f6feb,stroke:#58a6ff,color:#fff
+
+    style EKS_MOD fill:#0d1117,stroke:#326ce5,stroke-width:2px,color:#c9d1d9
+    style CP fill:#161b22,stroke:#326ce5,stroke-width:1px,color:#c9d1d9
+    style CTRL fill:#326ce5,stroke:#1a3a6e,color:#fff
+    style NG fill:#326ce5,stroke:#1a3a6e,color:#fff
+    style IRSA fill:#161b22,stroke:#326ce5,stroke-width:1px,color:#c9d1d9
+    style WR fill:#238636,stroke:#2ea043,color:#fff
+    style CAR fill:#238636,stroke:#2ea043,color:#fff
+    style EDR fill:#238636,stroke:#2ea043,color:#fff
+    style WFR fill:#238636,stroke:#2ea043,color:#fff
+
+    style ADDONS fill:#1a1a2e,stroke:#8957e5,stroke-width:2px,color:#c9d1d9
+    style NI fill:#8957e5,stroke:#6e40c9,color:#fff
+    style EDS fill:#8957e5,stroke:#6e40c9,color:#fff
+    style CAS fill:#8957e5,stroke:#6e40c9,color:#fff
+    style MS fill:#8957e5,stroke:#6e40c9,color:#fff
+
+    style AWS fill:#1a1a2e,stroke:#d29922,stroke-width:2px,color:#c9d1d9
+    style R53 fill:#d29922,stroke:#bb8009,color:#fff
+    style ACM fill:#d29922,stroke:#bb8009,color:#fff
+    style S3 fill:#d29922,stroke:#bb8009,color:#fff
+    style VPC fill:#d29922,stroke:#bb8009,color:#fff

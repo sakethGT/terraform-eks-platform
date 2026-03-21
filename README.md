@@ -4,54 +4,9 @@ Production-grade, multi-environment Amazon EKS infrastructure managed with Terra
 
 ## Architecture
 
-```mermaid
-graph TB
-    subgraph "AWS Cloud"
-        subgraph "VPC"
-            subgraph "Private Subnets"
-                EKS["EKS Control Plane"]
-                NG["Managed Node Groups<br/>(m5.xlarge / m5.4xlarge)"]
-            end
-        end
-
-        subgraph "IAM"
-            WR["Worker Node Role"]
-            CA["Cluster Autoscaler Role"]
-            ED["External DNS Role"]
-            WF["Workflow Role"]
-        end
-
-        subgraph "Add-ons"
-            NI["NGINX Ingress Controller"]
-            EDS["ExternalDNS"]
-            CAS["Cluster Autoscaler"]
-        end
-
-        S3["S3 Backend<br/>(Terraform State)"]
-        R53["Route 53"]
-        ACM["ACM Certificates"]
-    end
-
-    EKS --> NG
-    NG --> WR
-    CAS --> CA
-    EDS --> ED
-    EDS --> R53
-    NI --> ACM
-    WF --> WR
-
-    subgraph "Environments"
-        DEV["dev-npe<br/>(us-east-1)"]
-        MGMT_NPE["mgmt-npe<br/>(us-east-1)"]
-        MGMT_RI["mgmt-ri<br/>(us-east-1)"]
-        MGMT_PE["mgmt-euw1-pe<br/>(eu-west-1)"]
-    end
-
-    DEV --> EKS
-    MGMT_NPE --> EKS
-    MGMT_RI --> EKS
-    MGMT_PE --> EKS
-```
+<p align="center">
+  <img src="docs/architecture.svg" alt="Architecture Diagram" width="100%">
+</p>
 
 ## Features
 
