@@ -1,131 +1,225 @@
-# rms-skyfall-terraform
+# terraform-eks-platform
 
-## Setup
+Production-grade, multi-environment Amazon EKS infrastructure managed with Terraform.
 
-You need a few things installed first to work correctly
+## Architecture
 
-The first thing is the correct version of terraform which is `0.11.10`
+```mermaid
+graph TB
+    subgraph "AWS Cloud"
+        subgraph "VPC"
+            subgraph "Private Subnets"
+                EKS["EKS Control Plane"]
+                NG["Managed Node Groups<br/>(m5.xlarge / m5.4xlarge)"]
+            end
+        end
 
-```
-brew install terraform
-pip install awscli
-brew install aws-okta
-brew install aws-iam-authenticator
-```
+        subgraph "IAM"
+            WR["Worker Node Role"]
+            CA["Cluster Autoscaler Role"]
+            ED["External DNS Role"]
+            WF["Workflow Role"]
+        end
 
-## Connecting to AWS
+        subgraph "Add-ons"
+            NI["NGINX Ingress Controller"]
+            EDS["ExternalDNS"]
+            CAS["Cluster Autoscaler"]
+        end
 
-In `~/.aws/config` put:
+        S3["S3 Backend<br/>(Terraform State)"]
+        R53["Route 53"]
+        ACM["ACM Certificates"]
+    end
 
-```text
-[preview]
-cloudfront = true
+    EKS --> NG
+    NG --> WR
+    CAS --> CA
+    EDS --> ED
+    EDS --> R53
+    NI --> ACM
+    WF --> WR
 
-[profile mgmt]
-aws_saml_url = home/amazon_aws/0oa1vrj67vFBy04Cf2p7/272
-role_arn = arn:aws:iam::559436771417:role/OktaAdmin
-region = us-east-2
+    subgraph "Environments"
+        DEV["dev-npe<br/>(us-east-1)"]
+        MGMT_NPE["mgmt-npe<br/>(us-east-1)"]
+        MGMT_RI["mgmt-ri<br/>(us-east-1)"]
+        MGMT_PE["mgmt-euw1-pe<br/>(eu-west-1)"]
+    end
 
-[profile dev]
-aws_saml_url = home/amazon_aws/0oa1vre5w4pCTOV5Q2p7/272
-role_arn = arn:aws:iam::411497945720:role/OktaAdmin
-region = us-east-2
-```
-
-Run `aws-okta add`:
-
-```text
-Okta organization: rms
-
-Okta region ([us], emea, preview): 
-
-Okta domain [us.okta.com]: 
-
-Okta username: <your-sso-username>
-
-Okta password: <your-sso-password> 
-
-INFO[0010] Requesting MFA. Please complete two-factor authentication with your second device 
-INFO[0011] Sending Push Notification...                 
-INFO[0011] Device: phone1              
-```
-
-## Connecting to EKS
-
-If you want to connect to different EKS clusters, you need to run the following
-
-Get a copy of the EKS cluster's config. This will get the management cluster in the us-east-2 region
-
-```
-aws-okta exec mgmt -- aws eks update-kubeconfig --name mgmt --region us-east-2 --kubeconfig ~/.kube/mgmt
+    DEV --> EKS
+    MGMT_NPE --> EKS
+    MGMT_RI --> EKS
+    MGMT_PE --> EKS
 ```
 
-You'll want to enter a bash shell first via `aws-okta`
+## Features
+
+- **Multi-environment EKS clusters** -- separate stacks for dev, mgmt, and production across regions
+- **Reusable Terraform modules** -- shared EKS module with per-environment configuration
+- **IAM Roles for Service Accounts (IRSA)** -- fine-grained pod-level IAM permissions
+- **Cluster add-ons** -- NGINX Ingress, ExternalDNS, Cluster Autoscaler pre-configured
+- **Remote state management** -- S3 backend with per-environment state isolation
+- **Auto-scaling worker nodes** -- configurable min/max/desired capacity per environment
+- **Multi-region support** -- us-east-1 and eu-west-1 deployments
+- **Security-first** -- custom security groups, private subnets, SSH key management
+
+## Prerequisites
+
+- [Terraform](https://www.terraform.io/downloads) >= 1.0
+- [AWS CLI](https://aws.amazon.com/cli/) v2 configured with appropriate credentials
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) for cluster access
+- [Helm](https://helm.sh/) v3 for add-on deployment
+- [terraform-docs](https://terraform-docs.io/) (optional, for generating module docs)
+- [tflint](https://github.com/terraform-linters/tflint) (optional, for linting)
+- [checkov](https://www.checkov.io/) (optional, for security scanning)
+
+## Directory Structure
 
 ```
-aws-okta exec mgmt -- bash
+.
+├── Makefile                          # Common terraform commands
+├── Jenkinsfile                       # CI/CD pipeline definition
+├── modules/
+│   └── aws_eks/                      # Reusable EKS module
+│       ├── main.tf                   # EKS cluster, security groups, node groups
+│       ├── variables.tf              # Input variables
+│       ├── versions.tf               # Terraform and provider version constraints
+│       ├── datasources.tf            # VPC, subnet, and identity data sources
+│       ├── iam.tf                    # Worker node IAM roles and policies
+│       ├── iam-clusterautoscaler.tf  # Cluster Autoscaler IAM role
+│       ├── iam-external-dns.tf       # ExternalDNS IAM role
+│       ├── iam-workflow.tf           # Workflow service IAM role
+│       ├── ssh_key.tf                # EC2 key pair for SSH access
+│       └── keys/                     # SSH public keys per environment
+├── stacks/                           # Per-environment configurations
+│   ├── dev-npe/                      # Development non-production
+│   ├── mgmt-npe/                     # Management non-production
+│   ├── mgmt-ri/                      # Management RI environment
+│   └── mgmt-euw1-pe/                 # Management production (eu-west-1)
+├── environments/
+│   └── mgmt/HelmValuesNPE/           # Helm values for cluster add-ons
+└── helmfile/                         # Helmfile-based bootstrap scripts
 ```
 
+## Usage
 
-Now to use it, set the `KUBECONFIG` variable to point to that file
+### 1. Initialize a stack
 
+```bash
+# Using make
+make init STACK=dev-npe
+
+# Or directly
+cd stacks/dev-npe
+terraform init
 ```
-export KUBECONFIG=~/.kube/mgmt
+
+### 2. Plan changes
+
+```bash
+make plan STACK=dev-npe
 ```
 
-Now you can run kubectl
+### 3. Apply changes
 
+```bash
+make apply STACK=dev-npe
 ```
-kubectl get ns
+
+### 4. Deploy cluster add-ons
+
+After the EKS cluster is provisioned, deploy add-ons using the Helm scripts in each stack directory:
+
+```bash
+cd stacks/dev-npe
+./helm.sh
 ```
 
-## Creating a new EKS cluster
+### 5. Connect to the cluster
 
-1. assuming stack: **mgmt-euw1**, where euw1 is the region: **eu-west-1**, env: **pe**,
-2. copy existing stacks/mgmt-ri as new stack `stacks/<stack>-<env>`
-3. cd `stacks/<stack>-<env>`, update the following in the main.tf,<br/>
-   under **locals** block
-   - vpc_id
-   - region
-   - stack
-   - env
-   - asg_min_size (optional, default: 2)<br/>
-   - asg_desired_capacity (optional, default: 2)<br/>
-   - asg_max_size (optional, default: 30)<br/>
-   - env_tags (at the least, update stack, env)<br/>
-   
-   update under **terraform** block
-   
-   - bucket (optional, ensure that this bucket exists)<br/>
-   - key: `"<stack>-<env>-us-east-1/terraform.state"` <br/>
-   - region (optional)
+```bash
+aws eks update-kubeconfig --name dev-npe --region us-east-1
+kubectl get nodes
+```
 
-4. rename the files<br/>
-   - mv mgmt-ri-external-dns.yaml `<stack>-<env>-external-dns.yaml`
-   - mv mgmt-ri-kube2iam.yaml `<stack>-<env>-kube2iam.yaml`
-   - mv mgmt-ri-nginx-ingress.yaml `<stack>-<env>-nginx-ingress.yaml`
+## Available Stacks
 
-5. open `<stack>-<env>-external-dns.yaml` file, then update<br/>
-   - aws.region
-   - zoneIdFilters (get the zone from the Route 53 service, also update the comment on line 10)
-   - podAnnotations.iam.amazonaws.com/role: `k8s-external-dns-<stack>-<env>`
-   - txtOwnerId: `external-dns-<stack>-<env>`
-   save it
+| Stack | Region | Purpose |
+|-------|--------|---------|
+| `dev-npe` | us-east-1 | Development / non-production |
+| `mgmt-npe` | us-east-1 | Management / non-production |
+| `mgmt-ri` | us-east-1 | Management / RI |
+| `mgmt-euw1-pe` | eu-west-1 | Management / production (EU) |
 
-6. open `<stack>-<env>-nginx-ingress.yaml` file, then update<br/>
-   - controller.ingressClass: `<stack>-<env>-nginx` (very important)<br/>
-   - controller.service.Annotations.service.beta.kubernetes.io/aws-load-balancer-ssl-cert: get the value from AWS certificate manager service, find the domain you're working on get the arn for the domain.<br/>
-   save it
+## Cluster Add-ons
 
-7. open `helm.sh` file, then update the <br/>
-   - line 12 (for kube2iam), --name `<stack>-<env>-kube2iam>`, -f `<stack>-<env>-kube2iam.yaml`<br>
-   - line 13 (for external-dns), --name `<stack>-<env>-external-dns`, -f `<stack>-<env>-external-dns.yaml`<br>
-   - line 14 (for nginx-ingress), --name `<stack>-<env>-nginx-ingress`, -f `<stack>-<env>-nginx-ingress.yaml`<br>
-   save it
+Each stack deploys the following Kubernetes add-ons via Helm:
 
-8. need to create a ssh key, open a terminal, then type<br/>
-   `ssh-keygen -t rsa`<br/>
-   Enter file in which to save the key (/Users/<username>/.ssh/id_rsa): `/Users/<username>/.ssh/<stack>.<env>`<br/>
-   copy the public key `/Users/<username>/.ssh/<stack>.<env>.pub` to ./modules/aws_eks/keys dir<br/>
+| Add-on | Purpose |
+|--------|---------|
+| **NGINX Ingress** | L7 load balancing with internal ALB + ACM TLS termination |
+| **ExternalDNS** | Automatic Route 53 DNS record management |
+| **Cluster Autoscaler** | Node-level auto-scaling based on pod scheduling pressure |
+| **Metrics Server** | Resource metrics for HPA and `kubectl top` |
 
-9. checkin the new stack and make a pr
+## Customization
+
+### Adding a new environment
+
+1. Copy an existing stack directory:
+   ```bash
+   cp -r stacks/mgmt-ri stacks/<stack>-<env>
+   ```
+
+2. Update `main.tf` locals:
+   - `vpc_id` -- target VPC
+   - `region` -- AWS region
+   - `stack` / `env` -- naming convention
+   - `asg_min_size`, `asg_desired_capacity`, `asg_max_size`
+
+3. Update the S3 backend key to a unique path
+
+4. Generate an SSH key pair and place the `.pub` file in `modules/aws_eks/keys/`
+
+5. Update Helm values for add-ons (ingress class, ACM cert ARN, Route 53 zone ID)
+
+### Modifying worker node configuration
+
+Edit the stack's `main.tf` to adjust:
+
+- `worker_node_instance_type` -- EC2 instance type (default: `m5.xlarge`)
+- `kubernetes_version` -- EKS version (default: `1.28`)
+- `root_volume_size` -- EBS volume size in GB (default: `500`)
+
+## Linting and Validation
+
+```bash
+# Format all .tf files
+make fmt
+
+# Check formatting without changes
+make fmt-check
+
+# Validate configuration
+make validate STACK=dev-npe
+
+# Run tflint
+make lint STACK=dev-npe
+
+# Run checkov security scan
+make security-scan STACK=dev-npe
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Run `make fmt` and `make validate` before committing
+4. Commit your changes (`git commit -m 'Add my feature'`)
+5. Push to the branch (`git push origin feature/my-feature`)
+6. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

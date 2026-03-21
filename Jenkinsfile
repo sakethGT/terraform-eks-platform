@@ -1,3 +1,3 @@
 #!groovy
 
-new com.rms.jenkins.pipeline.MgmtEKSTerraformPipeline(this).execute()
+new com.infra.jenkins.pipeline.MgmtEKSTerraformPipeline(this).execute()

@@ -8,8 +8,8 @@ rbac:
   serviceAccountName: external-dns
 
 zoneIdFilters:
-  - Z1VPVBQHG6AUPL
-  - Z385TIGP0117GY
+  - ZEXAMPLEZONEID5
+  - ZEXAMPLEZONEID2
 
 podAnnotations:
   iam.amazonaws.com/role: eks-core-external-dns

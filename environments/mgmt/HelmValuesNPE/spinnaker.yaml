@@ -12,9 +12,9 @@ halyard:
     data:
       enable_s3_artifact.sh: |-
         $HAL_COMMAND config artifact s3 enable
-        $HAL_COMMAND config artifact s3 account add rms --region us-east-2
+        $HAL_COMMAND config artifact s3 account add platform --region us-east-2
         $HAL_COMMAND config provider docker-registry enable
-        $HAL_COMMAND config provider docker-registry account add ecr-mgmt-west --address https://559436771417.dkr.ecr.us-west-2.amazonaws.com --username AWS --password-command "aws --region us-west-2 ecr get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d | sed 's/^AWS://'"
+        $HAL_COMMAND config provider docker-registry account add ecr-mgmt-west --address https://123456789012.dkr.ecr.us-west-2.amazonaws.com --username AWS --password-command "aws --region us-west-2 ecr get-authorization-token --output text --query 'authorizationData[].authorizationToken' | base64 -d | sed 's/^AWS://'"
 
   spinnakerVersion: 1.11.6
   image:
@@ -22,13 +22,13 @@ halyard:
 
 ingress:
   enabled: true
-  host: spinnaker-sdp-mgmt.int.mgmt.rms-platform.com
+  host: spinnaker-sdp-mgmt.int.mgmt.example-platform.com
   annotations:
     kubernetes.io/ingress.class: nginx-int
 
 ingressGate:
   enabled: true
-  host: spinnaker-sdp-gate.int.mgmt.rms-platform.com
+  host: spinnaker-sdp-gate.int.mgmt.example-platform.com
   annotations:
     kubernetes.io/ingress.class: nginx-int
 
@@ -37,4 +37,4 @@ minio:
 
 s3:
   enabled: true
-  bucket: rms-skyfall-spinnaker
+  bucket: my-spinnaker-bucket

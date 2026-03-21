@@ -1,7 +1,30 @@
-.terraform
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfplan
 *.backup
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# Kubernetes
 kubeconfig*
 config-map-aws-*
+
+# Environment variables
+*.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
 
 # IntelliJ
 *.ipr
@@ -9,3 +32,9 @@ config-map-aws-*
 *.iws
 .idea/
 
+# VS Code
+.vscode/
+
+# Secrets
+*.pem
+*.key
