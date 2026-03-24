@@ -6,30 +6,6 @@ locals {
     }
   )
 
-  worker_groups = [
-    {
-      instance_type        = var.worker_node_instance_type
-      key_name             = "${var.stack}.${var.env}.key"
-      iam_role_id          = aws_iam_role.eks.id
-      subnets              = join(",", data.aws_subnet_ids.private.ids)
-      asg_desired_capacity = var.asg_desired_capacity
-      asg_min_size         = var.asg_min_size
-      asg_max_size         = var.asg_max_size
-      autoscaling_enabled  = 1
-    },
-  ]
-
-  workers_group_defaults = {
-    root_volume_size = var.root_volume_size
-  }
-
-  map_roles = [
-    {
-      role_arn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.role_admin}"
-      username = "k8s_admins"
-      group    = "system:masters"
-    },
-  ]
 }
 
 resource "aws_security_group" "eks_worker_sg_cust" {
@@ -54,7 +30,7 @@ module "eks" {
   version                              = "~> 19.0"
   cluster_version                      = var.kubernetes_version
   cluster_name                         = "${var.stack}-${var.env}"
-  subnet_ids                           = data.aws_subnet_ids.private.ids
+  subnet_ids                           = data.aws_subnets.private.ids
   tags                                 = local.tags
   vpc_id                               = data.aws_vpc.vpc.id
   eks_managed_node_groups = {

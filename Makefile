@@ -37,7 +37,7 @@ clean: ## Remove .terraform directories
 plan-all: ## Plan all stacks
 	@for dir in stacks/*/; do \
 		echo "Planning $$dir..."; \
-		cd $$dir && terraform plan && cd ../..; \
+		(cd $$dir && terraform plan); \
 	done
 
 fmt-check: ## Check formatting without making changes

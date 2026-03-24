@@ -1,6 +1,6 @@
 repositories:
   - name: stable
-    url: https://kubernetes-charts.storage.googleapis.com
+    url: https://charts.helm.sh/stable
 
   {{ if env "PLATFORM_HELM_CHART_REPO_URL" }}
   # Platform chart repo - currently not used but we may want to bring charts inhouse
@@ -13,35 +13,23 @@ releases:
     namespace: kube-system
     chart: stable/cluster-autoscaler
     values:
-    - "../../terraform-eks-platform/environments/mgmt/HelmValuesNPE/cluster-autoscaler.yaml"  
+    - "../environments/mgmt/HelmValuesNPE/cluster-autoscaler.yaml"
 
-  - name: eks-core-kube2iam
-    namespace: kube-system
-    chart: stable/kube2iam
-    values:
-    - "../../terraform-eks-platform/environments/mgmt/HelmValuesNPE/kube2iam.yaml"  
-  
   - name: eks-core-nginx-ingress-ext
     namespace: kube-system
     chart: stable/nginx-ingress
     values:
-    - "../../terraform-eks-platform/environments/mgmt/HelmValuesNPE/nginx-ingress-ext.yaml"  
-
-  - name: eks-core-nginx-ingress-int
-    namespace: kube-system
-    chart: stable/nginx-ingress
-    values:
-    - "../../terraform-eks-platform/environments/mgmt/HelmValuesNPE/nginx-ingress-int.yaml"  
+    - "../environments/mgmt/HelmValuesNPE/nginx-ingress-ext.yaml"
 
   - name: eks-core-external-dns
     namespace: kube-system
     chart: stable/external-dns
     values:
-    - "../../terraform-eks-platform/environments/mgmt/HelmValuesNPE/external-dns.yaml"  
+    - "../environments/mgmt/HelmValuesNPE/external-dns.yaml"
 
-  # SDP Support tooling 
+  # SDP Support tooling
   - name: weave-scope
     namespace: {{ env "SDP_TOOLING_NAMESPACE" | default "default" }}
-    labels:                                  
+    labels:
       component: sdp_support_tooling
     chart: stable/weave-scope

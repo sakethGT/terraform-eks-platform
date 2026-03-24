@@ -45,24 +45,24 @@ variable "kubernetes_version" {
 
 variable "root_volume_size" {
   description = "root volume size"
-  type        = string
-  default     = "500"
+  type        = number
+  default     = 500
 }
 
 variable "asg_min_size" {
   description = "Autoscaling min size"
-  type        = string
-  default     = "2"
+  type        = number
+  default     = 2
 }
 
 variable "asg_desired_capacity" {
   description = "Autoscaling desired capacity to increase or decrease the number of instances in ASG dynamically to meet changing scaling policy"
-  type        = string
-  default     = "2"
+  type        = number
+  default     = 2
 }
 
 variable "asg_max_size" {
   description = "Max number of worker nodes"
-  type        = string
-  default     = "30"
+  type        = number
+  default     = 30
 }

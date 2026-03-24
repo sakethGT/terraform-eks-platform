@@ -97,4 +97,4 @@ s3:
 
 slack:
   enabled: true
-  token: xoxb-0000000000000-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  token: <SLACK_BOT_TOKEN>

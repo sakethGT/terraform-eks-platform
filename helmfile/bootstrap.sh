@@ -69,7 +69,6 @@ function main() {
       log_msg_debug "Starting bootstrap"
     fi
 
-    setup_tiller
     setup_core_components $1
 }
 
@@ -128,64 +127,6 @@ function setup_helmfile_helpers() {
 
 }
 
-# 
-# tiller
-# 
-function setup_tiller() {
-    if $log_debug; then
-      log_msg_debug "Setup tiller"
-    fi
-
-    if ! kubectl --namespace kube-system get sa | grep 'tiller' &> /dev/null; then
-      if $log_debug; then
-        log_msg_debug "Didn't find a tiller serviceaccount 'assuming defaults'."
-      fi
-      kubectl -n kube-system create serviceaccount tiller
-      if [ $? -ne 0 ]; then
-        error_exit "failed to create serviceaccount tiller"
-      fi
-    else 
-      if $log_debug; then
-        log_msg_debug "tiller serviceaccount existed"
-      fi
-    fi
-
-    if !  kubectl --namespace kube-system get clusterrolebindings | grep 'tiller' &> /dev/null; then
-      if $log_debug; then
-        log_msg_debug "Didn't find a tiller clusterrolebinding."
-      fi
-      kubectl create clusterrolebinding tiller -n kube-system --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-      if [ $? -ne 0 ]; then
-        error_exit "failed to create clusterrolebinding for tiller"
-      fi
-    else 
-      if $log_debug; then
-        log_msg_debug "tiller clusterrolebindings existed"
-      fi
-    fi
-
-    helm init --service-account tiller  &> /dev/null
-    if [ $? -ne 0 ]; then
-        error_exit " helm init failed"
-    fi
-
-    if !  kubectl -n kube-system get deployments | grep 'tiller' &> /dev/null; then
-      if $log_debug; then
-        log_msg_debug "Didn't find a tiller deployment."
-      fi
-      error_exit "No tiller deployment found."
-    else
-      if $log_debug; then
-        log_msg_debug "tiller deployment found"
-      fi
-    fi    
-
-    if $log_debug; then
-      log_msg_debug "Completed tiller setup"
-    fi
-}
-
-
 #=================================================================================
 # 
 # Entry: check args incl file existence and the presence of the core tools we need.
@@ -199,7 +140,7 @@ if ! tool_available "kubectl"; then
 elif ! tool_available "helm"; then
   error_exit "helm is required however I wasn't able to find it on the available script path. PATH was: $PATH"
 elif ! tool_available "helmfile"; then
-  error_exit "helm is required however I wasn't able to find it on the available script path. PATH was: $PATH"
+  error_exit "helmfile is required however I wasn't able to find it on the available script path. PATH was: $PATH"
 else
   if [ -e $1 ]; then
       main $1

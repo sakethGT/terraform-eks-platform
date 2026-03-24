@@ -10,8 +10,11 @@ data "aws_vpc" "vpc" {
   id = var.vpc_id
 }
 
-data "aws_subnet_ids" "private" {
-  vpc_id = data.aws_vpc.vpc.id
+data "aws_subnets" "private" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.vpc.id]
+  }
 
   filter {
     name   = "tag:type"

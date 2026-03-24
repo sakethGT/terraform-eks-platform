@@ -1,12 +1,8 @@
 locals {
   eks_policies = [
     "AmazonEKSWorkerNodePolicy",
-    "ElasticLoadBalancingFullAccess",
     "AmazonEC2ContainerRegistryReadOnly",
     "AmazonEKS_CNI_Policy",
-    "AmazonS3FullAccess",
-    "SecretsManagerReadWrite",
-    "AdministratorAccess"
   ]
 }
 
